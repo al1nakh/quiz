@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест: Тұлға түрі</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0c1a;
+    --surface: #16132a;
+    --surface2: #1e1a35;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(159,140,255,0.4);
+    --accent: #9f8cff;
+    --accent2: #c4b8ff;
+    --accent-dim: rgba(159,140,255,0.12);
+    --text: #f0ecff;
+    --text-muted: #7b74a0;
+    --text-faint: #3d3860;
+    --type1: #ff7c5c;
+    --type2: #9f8cff;
+    --type3: #3ecfa0;
+    --type4: #5ab4ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 10%, rgba(100,60,220,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 90%, rgba(60,180,140,0.10) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 48px 40px;
+    max-width: 680px;
+    width: 100%;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+  }
+
+  .quiz-header { margin-bottom: 36px; }
+  .q-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .q-num {
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .q-dots { display: flex; gap: 5px; }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-faint);
+    transition: background 0.3s, transform 0.3s;
+  }
+  .dot.done { background: var(--accent); }
+  .dot.current { background: var(--accent2); transform: scale(1.4); }
+
+  .progress-track {
+    height: 2px;
+    background: var(--text-faint);
+    border-radius: 99px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .q-text {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    user-select: none;
+  }
+  .opt:hover {
+    border-color: var(--border-hover);
+    background: rgba(159,140,255,0.06);
+    transform: translateX(3px);
+  }
+  .opt.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    transform: translateX(3px);
+  }
+  .opt-letter {
+    flex-shrink: 0;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .opt.selected .opt-letter {
+    background: var(--accent);
+    color: #0e0c1a;
+    border-color: var(--accent);
+  }
+  .opt-text { font-size: 14.5px; color: var(--text); line-height: 1.5; }
+
+  .nav { display: flex; align-items: center; justify-content: space-between; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s, transform 0.15s, background 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--border-hover); color: var(--text); }
+  .btn-primary {
+    background: var(--accent);
+    color: #0e0c1a;
+    font-weight: 600;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--accent2); }
+  .btn:disabled { opacity: 0.3; cursor: default; }
+
+  #result { display: none; animation: fadeUp 0.5s ease both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header { text-align: center; margin-bottom: 28px; }
+  .result-emoji { font-size: 56px; line-height: 1; margin-bottom: 12px; }
+  .result-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 99px;
+    margin-bottom: 10px;
+  }
+  .result-name {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .result-subtitle { font-size: 13px; color: var(--text-muted); }
+
+  .result-desc {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: var(--text);
+    margin-bottom: 28px;
+  }
+
+  .scores-title {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .score-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    width: 190px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .score-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--text-faint);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+  }
+  .score-num {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 500;
+    width: 28px;
+    text-align: right;
+    color: var(--text-muted);
+  }
+  .score-row.winner .score-label { color: var(--text); font-weight: 500; }
+  .score-row.winner .score-num   { color: var(--text); }
+
+  .result-nav { display: flex; justify-content: center; margin-top: 28px; }
+
+  #quiz { animation: fadeUp 0.4s ease both; }
+
+  svg.icon { width: 16px; height: 16px; stroke: currentColor; fill: none;
+             stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- ТЕСТ ЭКРАНЫ -->
+  <div id="quiz">
+    <div class="quiz-header">
+      <div class="q-meta">
+        <span class="q-num" id="q-num">Сұрақ 1 / 20</span>
+        <div class="q-dots" id="q-dots"></div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress" style="width:5%"></div>
+      </div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+
+    <div class="options" id="options"></div>
+
+    <div class="nav">
+      <button class="btn btn-ghost" id="btn-back" onclick="goBack()" disabled>
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Артқа
+      </button>
+      <button class="btn btn-primary" id="btn-next" onclick="goNext()" disabled>
+        Әрі қарай
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- НӘТИЖЕ ЭКРАНЫ -->
+  <div id="result">
+    <div class="result-header">
+      <div class="result-emoji" id="res-emoji"></div>
+      <div class="result-badge" id="res-badge">Сіздің тұлға түріңіз</div>
+      <div class="result-name" id="res-name"></div>
+      <div class="result-subtitle" id="res-sub"></div>
+    </div>
+    <div class="result-desc" id="res-desc"></div>
+    <div class="scores-title">Барлық түрлер бойынша ұпайлар</div>
+    <div id="res-scores"></div>
+    <div class="result-nav">
+      <button class="btn btn-ghost" onclick="restart()">
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.75"/></svg>
+        Қайта өту
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  ["Демалыс күндерін қалай өткізгіңіз келеді?", [
+    "Белсенді — спорт, серуен, жаңа жерлер",
+    "Шығармашылықпен — сурет, музыка, қолөнер",
+    "Зияткерлікпен — кітап, курс, ой жүгірту",
+    "Қоғамдық — достармен кездесу, іс-шаралар"
+  ]],
+  ["Сізді ең көп не шабыттандырады?", [
+    "Мақсатқа жету және жеңіс",
+    "Жаңа және сұлу нәрсе жасау",
+    "Шындықты тану және дүниені түсіну",
+    "Адамдарға көмектесу және жылы қарым-қатынас"
+  ]],
+  ["Маңызды шешімдерді қалай қабылдайсыз?", [
+    "Тез — интуицияма сенемін және әрекет етемін",
+    "Ішкі сезім мен құндылықтарды ұстанамын",
+    "Барлық деректер мен нұсқаларды мұқият талдаймын",
+    "Жақындарыммен кеңесемін және олардың пікірін ескеремін"
+  ]],
+  ["Адамдарда сізді ең көп не ашуландырады?", [
+    "Белсенсіздік және әрекет етуге құлықсыздық",
+    "Фантазиясыз үлгілік ойлау",
+    "Беткейлік және бөлшектерді елемеу",
+    "Суықтық және басқалардың сезіміне немқұрайлылық"
+  ]],
+  ["Бейтаныс компанияда қалай ұстайсыз?", [
+    "Бастаманы бірден өзіме аламын және танысамын",
+    "Байқаймын және кіруге ыңғайлы сәтті күтемін",
+    "Тыңдаймын, ақылды сұрақтар қоямын",
+    "Барлығын таныстырып, жайлылық жасауға тырысамын"
+  ]],
+  ["Сіздің мінсіз жұмыс жобаңыз — бұл...", [
+    "Нақты KPI мен мерзімі бар күрделі сын",
+    "Қатаң шектеусіз шығармашылық тапсырма",
+    "Қызықты мәселесі бар терең зерттеу",
+    "Әріптестердің қолдауымен командалық жұмыс"
+  ]],
+  ["Сіз үшін табыс нені білдіреді?", [
+    "Бірінші болу, шыңға жету",
+    "із қалдыру — мәнді нәрсе жасау",
+    "Өзін және дүниені терең түсіну",
+    "Сүйетін адамдарыммен үйлесімде өмір сүру"
+  ]],
+  ["Стрессті қалай жеңесіз?", [
+    "Дене жүктемесі — жүгіру, спорт, қозғалыс",
+    "Шығармашылық — сурет саламын, ойнаймын, жазамын",
+    "Жағдайды талдаймын және шығу жолын іздеймін",
+    "Жақындарыммен сөйлесемін, қолдау сұраймын"
+  ]],
+  ["Саяхатта сізді ең көп не тартады?", [
+    "Экстрим және оқиғалар, жаңа тәжірибе",
+    "Сәулет, өнер, жергілікті мәдениет",
+    "Тарих, мұражайлар, жаңаны үйрену",
+    "Жергілікті адамдармен және олардың өмірімен танысу"
+  ]],
+  ["Ережелерге қалай қарайсыз?", [
+    "Ережелер — жеңу керек кедергілер",
+    "Ережелер шығармашылықты шектейді — айналып өту жолын іздеймін",
+    "Ережелерді дұрыс қолдану үшін түсіну керек",
+    "Ережелер бірге өмір сүруге көмектеседі — сыйлаймын"
+  ]],
+  ["Достарыңыз сізді ... деп сипаттайды", [
+    "Жігерлі және мақсатты көшбасшы",
+    "Бірегей және болжанбайтын адам",
+    "Ақылды және ойшыл әңгімелесуші",
+    "Мейірімді және көмекке әрдайым дайын"
+  ]],
+  ["Сіз жиі не оқисыз немесе не көресіз?", [
+    "Көшбасшылардың өмірбаяны, бизнес, мотивация",
+    "Өнер, дизайн, кино, фантастика",
+    "Ғылым, тарих, философия, деректі фильм",
+    "Адамдар туралы оқиғалар, психология, отбасы"
+  ]],
+  ["Өзгерістерге қалай қарайсыз?", [
+    "Өте ұнатамын — өзгерістер мүмкіндік",
+    "Жаңа нәрсе ашса қабылдаймын",
+    "Қабылдамастан бұрын плюс пен минусын бағалаймын",
+    "Сәл қорқамын — тұрақтылық маңызды"
+  ]],
+  ["Сізге не ең қиын берілетін?", [
+    "Шыдамдылық және нәтижені күту",
+    "Рутина және қайталанатын тапсырмалар",
+    "Мағынасыз беткей қарым-қатынас",
+    "Жанжалдар және шиеленісті қарым-қатынастар"
+  ]],
+  ["Оқуды қалай жөн көресіз?", [
+    "Практика арқылы — жасаймын және қателерден үйренемін",
+    "Тәжірибелер арқылы — әдеттен тыс тәсілдерді қолданамын",
+    "Жүйе арқылы — алдымен теория, содан кейін практика",
+    "Қарым-қатынас арқылы — басқа адамдардан үйренемін"
+  ]],
+  ["Болашақта сізді не көбірек алаңдатады?", [
+    "Мақсатыма жете алмау",
+    "Жасау мүмкіндігінен айырылу",
+    "Дамуды тоқтату",
+    "Жақындарымнан және байланыстан айырылу"
+  ]],
+  ["Ақшаға қалай қарайсыз?", [
+    "Ақша — мақсатқа жету құралы",
+    "Ақша шығармашылыққа бостандық береді",
+    "Ақша — дұрыс басқару керек ресурс",
+    "Ақша маңызды, бірақ басты — қарым-қатынас"
+  ]],
+  ["Жұмыста сізді не мотивациялайды?", [
+    "Нәтиже, мойындау, мансап",
+    "Қызықты тапсырмалар және идеяларға кеңістік",
+    "Шешу керек күрделі мәселелер",
+    "Жақсы команда және жайлы атмосфера"
+  ]],
+  ["Сынға қалай реакция жасайсыз?", [
+    "Отын ретінде пайдаланамын — мүмкін екенімді дәлелдеймін",
+    "Ренжимін, бірақ кейін одан дән табамын",
+    "Объективті талдаймын — не дұрыс, не емес",
+    "Алаңдаймын, қалай айтылғаны маңызды"
+  ]],
+  ["Егер суперқабілет таңдай алсаңыз...", [
+    "Аса жылдамдық пен күш — барлығынан жылдам әрекет ету",
+    "Ой күшімен кез келген нәрсе жасау",
+    "Дүниенің барлық сұрақтарына жауапты білу",
+    "Кез келген адамды сезіну және түсіну"
+  ]]
+];
+
+const TYPES = [
+  {
+    emoji: "🦁",
+    name: "Көшбасшы-іскер",
+    color: "#ff7c5c",
+    badge: "rgba(255,124,92,0.15)",
+    badgeText: "#ff7c5c",
+    sub: "1-түр — Әрекет және нәтиже",
+    desc: "Сіз — әрекет пен нәтиженің адамысыз. Жігерлі, мақсатты, белгісіздік жағдайында да жауапкершілік алудан және алға жылжудан қорықпайсыз. Сізді бәсекелестік пен мақсатқа жетуге болатынын өзіңізге және басқаларға дәлелдеу мүмкіндігі шабыттандырады. Сіз — туа біткен көшбасшысыз, адамдар сіздің жеріңіз бен сенімділігіңізге тартылады."
+  },
+  {
+    emoji: "🦋",
+    name: "Шығармашыл-арманшыл",
+    color: "#9f8cff",
+    badge: "rgba(159,140,255,0.15)",
+    badgeText: "#c4b8ff",
+    sub: "2-түр — Қиял және бостандық",
+    desc: "Сіз — идеялар мен стандартты емес шешімдердің қайнар көзісіз. Дүниені басқаша көресіз, басқалар байқамайтын нәрселерді байқайсыз және кәдімгі заттардан бірегей нәрсе жасайсыз. Сізге бостандық маңызды — ойда, жұмыста, өмірде. Рутина сізді тұншықтырады, бірақ шығармашылық ағымда сіз таңғаларлық нәрселерге қабілеттісіз."
+  },
+  {
+    emoji: "🦉",
+    name: "Ойшыл-аналитик",
+    color: "#3ecfa0",
+    badge: "rgba(62,207,160,0.15)",
+    badgeText: "#3ecfa0",
+    sub: "3-түр — Тереңдік және түсіну",
+    desc: "Сіз — тереңдік пен түсінудің адамысыз. Әрекет жасамас бұрын ойлайсыз, талдайсыз, заңдылықтарды іздейсіз. Жай жауабы жоқ күрделі сұрақтар сізді тартады. Нақтылықты, білімді және логиканы бағалайсыз. Айналаңыздағылар сізден кеңес сұрайды — және бекер емес, себебі сіздің қорытындыларыңыз әдетте дәл болады."
+  },
+  {
+    emoji: "🌿",
+    name: "Үйлестіруші",
+    color: "#5ab4ff",
+    badge: "rgba(90,180,255,0.15)",
+    badgeText: "#5ab4ff",
+    sub: "4-түр — Эмпатия және байланыс",
+    desc: "Сіз — кез келген команда мен отбасының жүрегісіз. Адамдар, қарым-қатынас және эмоционалды атмосфера сіз үшін маңызды. Басқалардың көңіл-күйін нәзік сезесіз, тыңдай және қолдай аласыз. Сіз үшін ең бастысы — жаныңыздағылардың бәріне жайлы болуы. Сіздің эмпатияңыз бен қамқорлығыңыз айналаңызда адамдарды тартатын ерекше жылулық жасайды."
+  }
+];
+
+const LETTERS = ["А", "Б", "В", "Г"];
+
+let current = 0;
+let answers = new Array(20).fill(null);
+
+function buildDots() {
+  const c = document.getElementById('q-dots');
+  c.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < current ? ' done' : i === current ? ' current' : '');
+    c.appendChild(d);
+  }
+}
+
+function render() {
+  const [qText, opts] = QUESTIONS[current];
+  const n = current + 1;
+
+  document.getElementById('q-num').textContent = `Сұрақ ${n} / 20`;
+  document.getElementById('q-text').textContent = qText;
+  document.getElementById('progress').style.width = `${(n / 20) * 100}%`;
+  buildDots();
+
+  const container = document.getElementById('options');
+  container.innerHTML = '';
+  opts.forEach((text, i) => {
+    const div = document.createElement('div');
+    div.className = 'opt' + (answers[current] === i ? ' selected' : '');
+    div.innerHTML = `<div class="opt-letter">${LETTERS[i]}</div><div class="opt-text">${text}</div>`;
+    div.onclick = () => pick(i);
+    container.appendChild(div);
+  });
+
+  document.getElementById('btn-back').disabled = current === 0;
+  const nextBtn = document.getElementById('btn-next');
+  const answered = answers[current] !== null;
+  nextBtn.disabled = !answered;
+  nextBtn.innerHTML = current === 19 && answered
+    ? 'Нәтиже <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>'
+    : 'Әрі қарай <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+}
+
+function pick(i) {
+  answers[current] = i;
+  render();
+}
+
+function goNext() {
+  if (answers[current] === null) return;
+  if (current === 19) { showResult(); return; }
+  current++;
+  render();
+}
+
+function goBack() {
+  if (current > 0) { current--; render(); }
+}
+
+function showResult() {
+  const scores = [0, 0, 0, 0];
+  answers.forEach(a => { if (a !== null) scores[a]++; });
+  const winIdx = scores.indexOf(Math.max(...scores));
+  const w = TYPES[winIdx];
+
+  document.getElementById('quiz').style.display = 'none';
+
+  document.getElementById('res-emoji').textContent = w.emoji;
+  const badge = document.getElementById('res-badge');
+  badge.textContent = 'Сіздің тұлға түріңіз';
+  badge.style.background = w.badge;
+  badge.style.color = w.badgeText;
+  const nameEl = document.getElementById('res-name');
+  nameEl.textContent = w.name;
+  nameEl.style.color = w.color;
+  document.getElementById('res-sub').textContent = w.sub;
+  document.getElementById('res-desc').textContent = w.desc;
+
+  const sc = document.getElementById('res-scores');
+  sc.innerHTML = '';
+  TYPES.forEach((t, i) => {
+    const pct = Math.round(scores[i] / 20 * 100);
+    const isWin = i === winIdx;
+    const row = document.createElement('div');
+    row.className = 'score-row' + (isWin ? ' winner' : '');
+    row.innerHTML = `
+      <div class="score-label">${t.emoji} ${t.name}</div>
+      <div class="score-bar-bg">
+        <div class="score-bar-fill" style="width:0%; background:${t.color}" data-w="${pct}"></div>
+      </div>
+      <div class="score-num">${scores[i]}</div>`;
+    sc.appendChild(row);
+  });
+
+  const res = document.getElementById('result');
+  res.style.display = 'block';
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll('.score-bar-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }));
+}
+
+function restart() {
+  current = 0;
+  answers = new Array(20).fill(null);
+  document.getElementById('result').style.display = 'none';
+  const quiz = document.getElementById('quiz');
+  quiz.style.display = 'block';
+  quiz.style.animation = 'none';
+  void quiz.offsetWidth;
+  quiz.style.animation = 'fadeUp 0.4s ease both';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
